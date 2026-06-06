@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS book_chunks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   chapter_id UUID NOT NULL REFERENCES chapters(id) ON DELETE CASCADE,
   content_text TEXT NOT NULL,
-  embedding vector(1536),
+  embedding vector(768),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

@@ -28,7 +28,7 @@ export class BookChunk {
 
   @Column({
     type: 'vector',
-    length: 1536,
+    length: 768,
     nullable: true,
     transformer: vectorTransformer,
   })

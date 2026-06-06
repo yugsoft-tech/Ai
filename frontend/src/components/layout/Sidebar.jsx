@@ -1,8 +1,11 @@
 import React from 'react';
 import { 
   MessageSquare, BookOpen, FileText, LayoutDashboard, 
-  CheckCircle, Presentation, FilePenLine, User 
+  CheckCircle, Presentation, FilePenLine, User, Settings, LogOut
 } from 'lucide-react';
+import useAuthStore from '@/store/authStore';
+
+import Link from 'next/link';
 
 const TOOLS = [
   { id: 'chat', label: 'Chat with Book', icon: MessageSquare },
@@ -16,6 +19,17 @@ const TOOLS = [
 ];
 
 export default function Sidebar({ activeTool, setActiveTool }) {
+  const { user, logout } = useAuthStore();
+  const userRole = user?.role || 'teacher';
+  const userEmail = user?.email || 'admin@yugsoft.com';
+  const displayRole = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+  const displayEmail = userEmail.split('@')[0];
+
+  const handleLogout = () => {
+    logout();
+    window.location.href = '/login';
+  };
+
   return (
     <div className="w-[250px] h-full flex flex-col glass-panel border-l-0 border-y-0 rounded-none z-10">
       {/* Brand Logo */}
@@ -48,17 +62,25 @@ export default function Sidebar({ activeTool, setActiveTool }) {
         })}
       </div>
 
-      {/* User Profile Pill */}
-      <div className="p-4 border-t border-glass-border">
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer transition-colors border border-white/5">
+      {/* User Profile Pill & Logout */}
+      <div className="p-4 border-t border-glass-border space-y-2">
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
           <div className="w-8 h-8 rounded-full bg-emerald-green/20 flex items-center justify-center text-emerald-green border border-emerald-green/50">
             <User size={16} />
           </div>
-          <div className="flex-1 text-left">
-            <p className="text-sm font-medium text-white">Prof. Sarah</p>
-            <p className="text-xs text-gray-400">Admin</p>
+          <div className="flex-1 text-left min-w-0">
+            <p className="text-sm font-medium text-white max-w-[140px] truncate">{displayEmail}</p>
+            <p className="text-xs text-gray-400">{displayRole}</p>
           </div>
         </div>
+
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-sm font-semibold transition-colors"
+        >
+          <LogOut size={16} />
+          Log Out
+        </button>
       </div>
     </div>
   );

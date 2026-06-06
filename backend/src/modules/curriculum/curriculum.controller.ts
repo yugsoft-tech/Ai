@@ -15,6 +15,7 @@ import { CurriculumService } from './curriculum.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { CreateChapterDto } from './dto/create-chapter.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
+import { UpdateChapterDto } from './dto/update-chapter.dto';
 
 @Controller('curriculum')
 export class CurriculumController {
@@ -86,6 +87,36 @@ export class CurriculumController {
     @Param('chapterId') chapterId: string,
   ) {
     return this.curriculumService.findChapter(
+      user.tenantId,
+      bookId,
+      chapterId,
+    );
+  }
+
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Patch('books/:bookId/chapters/:chapterId')
+  updateChapter(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('bookId') bookId: string,
+    @Param('chapterId') chapterId: string,
+    @Body() dto: UpdateChapterDto,
+  ) {
+    return this.curriculumService.updateChapter(
+      user.tenantId,
+      bookId,
+      chapterId,
+      dto,
+    );
+  }
+
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Delete('books/:bookId/chapters/:chapterId')
+  deleteChapter(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('bookId') bookId: string,
+    @Param('chapterId') chapterId: string,
+  ) {
+    return this.curriculumService.deleteChapter(
       user.tenantId,
       bookId,
       chapterId,

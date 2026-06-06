@@ -27,14 +27,42 @@ export default function LoginPage() {
       try {
         response = await api.post('/auth/login', { email, password });
       } catch (err) {
-        // If credentials match the demo credentials and user doesn't exist (401), auto-signup
-        if (email === 'demo@yugsoft.com' && password === 'demo1234' && (err.response?.status === 401 || err.response?.status === 404)) {
-          response = await api.post('/auth/signup', {
-            email,
-            password,
-            tenantName: 'Demo School',
-            role: 'teacher'
-          });
+        // If credentials match the demo credentials and user doesn't exist (401/404), auto-signup
+        const isDemoTeacher = email === 'demo@yugsoft.com' && password === 'demo1234';
+        const isDemoAdmin = email === 'admin@yugsoft.com' && password === 'admin1234';
+
+        if ((isDemoTeacher || isDemoAdmin) && (err.response?.status === 401 || err.response?.status === 404)) {
+          if (isDemoAdmin) {
+            // Admin creates their own new tenant
+            response = await api.post('/auth/signup', {
+              email,
+              password,
+              tenantName: 'Demo School',
+              role: 'admin'
+            });
+          } else {
+            // Teacher must join the admin's existing tenant
+            // First login the admin to get tenantId, then signup teacher under same tenant
+            let adminTenantId = null;
+            try {
+              const adminLoginRes = await api.post('/auth/login', {
+                email: 'admin@yugsoft.com',
+                password: 'admin1234',
+              });
+              const adminData = adminLoginRes.data?.data || adminLoginRes.data;
+              adminTenantId = adminData?.user?.tenantId;
+            } catch {
+              // admin not yet signed up, just create teacher with own tenant
+            }
+
+            response = await api.post('/auth/signup', {
+              email,
+              password,
+              tenantName: 'Demo School',
+              role: 'teacher',
+              ...(adminTenantId ? { tenantId: adminTenantId } : {}),
+            });
+          }
         } else {
           throw err;
         }
@@ -43,7 +71,13 @@ export default function LoginPage() {
       const data = response.data?.data || response.data;
       const { accessToken, user } = data;
       setAuth(user, accessToken);
-      router.push('/teacher'); // Redirect to dashboard
+      if (user?.role === 'admin') {
+        router.push('/admin');
+      } else if (user?.role === 'student') {
+        router.push('/student');
+      } else {
+        router.push('/teacher');
+      }
     } catch (err) {
       const apiError = err.response?.data?.message;
       let errorMsg = '';
@@ -54,7 +88,7 @@ export default function LoginPage() {
       } else if (apiError && typeof apiError === 'object') {
         errorMsg = apiError.message || JSON.stringify(apiError);
       } else {
-        errorMsg = err.response?.data?.error || err.message || 'Invalid email or password. Hint: Use demo@yugsoft.com / demo1234';
+        errorMsg = err.response?.data?.error || err.message || 'Invalid email or password. Hint: Use admin@yugsoft.com / admin1234 or demo@yugsoft.com / demo1234';
       }
       setError(errorMsg);
     } finally {

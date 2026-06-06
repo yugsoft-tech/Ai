@@ -6,6 +6,7 @@ import { Chapter } from '../../database/entities/chapter.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { CreateChapterDto } from './dto/create-chapter.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
+import { UpdateChapterDto } from './dto/update-chapter.dto';
 
 @Injectable()
 export class CurriculumService {
@@ -108,5 +109,25 @@ export class CurriculumService {
       throw new NotFoundException('Chapter not found');
     }
     return chapter;
+  }
+
+  async updateChapter(
+    tenantId: string,
+    bookId: string,
+    chapterId: string,
+    dto: UpdateChapterDto,
+  ): Promise<Chapter> {
+    const chapter = await this.findChapter(tenantId, bookId, chapterId);
+    Object.assign(chapter, dto);
+    return this.chapterRepository.save(chapter);
+  }
+
+  async deleteChapter(
+    tenantId: string,
+    bookId: string,
+    chapterId: string,
+  ): Promise<void> {
+    const chapter = await this.findChapter(tenantId, bookId, chapterId);
+    await this.chapterRepository.remove(chapter);
   }
 }

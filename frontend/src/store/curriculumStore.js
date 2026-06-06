@@ -17,12 +17,28 @@ const useCurriculumStore = create((set, get) => ({
       
       set({ books });
 
-      // If we have books and no book is selected yet, default select the first book and chapter
-      if (books.length > 0 && !get().selectedBookId) {
+      // Default select the first book if none selected, or if the selected one was deleted
+      const currentBookId = get().selectedBookId;
+      const bookStillExists = books.some((b) => b.id === currentBookId);
+      
+      if (books.length > 0 && (!currentBookId || !bookStillExists)) {
         const firstBook = books[0];
         set({ selectedBookId: firstBook.id });
         if (firstBook.chapters && firstBook.chapters.length > 0) {
           set({ selectedChapterId: firstBook.chapters[0].id });
+        } else {
+          set({ selectedChapterId: '' });
+        }
+      } else if (books.length === 0) {
+        set({ selectedBookId: '', selectedChapterId: '' });
+      } else if (bookStillExists) {
+        // Double check if selected chapter still exists
+        const currentBook = books.find((b) => b.id === currentBookId);
+        const chapterStillExists = currentBook?.chapters?.some((c) => c.id === get().selectedChapterId);
+        if (!chapterStillExists && currentBook?.chapters && currentBook.chapters.length > 0) {
+          set({ selectedChapterId: currentBook.chapters[0].id });
+        } else if (!chapterStillExists) {
+          set({ selectedChapterId: '' });
         }
       }
     } catch (err) {
