@@ -1,7 +1,16 @@
 -- Yugsoft Tech: enable pgvector and core schema
 CREATE EXTENSION IF NOT EXISTS vector;
 
-CREATE TYPE tenant_status AS ENUM ('active', 'suspended', 'pending');
+-- 1. Extension enable karein (is me pehle se if not exists hota hai)
+CREATE EXTENSION IF NOT EXISTS pgvector;
+
+-- 2. ENUM Type ko crash होने se bachane ke liye safe structure:
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tenant_status') THEN
+        CREATE TYPE tenant_status AS ENUM ('ACTIVE', 'SUSPENDED', 'INACTIVE');
+    END IF;
+END $$;
 CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'student');
 
 CREATE TABLE IF NOT EXISTS tenants (
@@ -45,7 +54,7 @@ CREATE TABLE IF NOT EXISTS book_chunks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   chapter_id UUID NOT NULL REFERENCES chapters(id) ON DELETE CASCADE,
   content_text TEXT NOT NULL,
-  embedding vector(1536),
+  embedding vector(768),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

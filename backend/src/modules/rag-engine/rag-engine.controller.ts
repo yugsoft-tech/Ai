@@ -51,4 +51,15 @@ export class RagEngineController {
   ) {
     return this.ragEngineService.chat(user.tenantId, dto);
   }
+
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Post('ingest-book')
+  @UseInterceptors(FileInterceptor('file'))
+  ingestBook(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body('bookId') bookId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.ragEngineService.processAndIngestTextbook(user.tenantId, bookId, file.buffer);
+  }
 }

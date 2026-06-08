@@ -7,7 +7,7 @@ import useCurriculumStore from '@/store/curriculumStore';
 import api from '@/services/api';
 
 export default function ChatWithBook() {
-  const { selectedBookId, selectedChapterId } = useCurriculumStore();
+  const { selectedSubjectId, selectedChapterId } = useCurriculumStore();
   const [messages, setMessages] = useState([
     {
       role: 'ai',
@@ -33,7 +33,7 @@ export default function ChatWithBook() {
     try {
       const response = await api.post('/rag/chat', {
         query: queryText,
-        bookId: selectedBookId || undefined,
+        bookId: selectedSubjectId || undefined,
         chapterId: selectedChapterId || undefined,
         history: messages.map((m) => ({
           role: m.role === 'user' ? 'user' : 'assistant',
@@ -146,7 +146,7 @@ export default function ChatWithBook() {
           <Button
             variant="primary"
             onClick={handleSend}
-            className="absolute right-1 top-1 bottom-1 rounded-full px-3 py-1 !h-auto"
+            className="absolute right-1 top-1 bottom-1 rounded-full px-3 py-1 h-auto!"
             disabled={isLoading}
           >
             {isLoading ? (

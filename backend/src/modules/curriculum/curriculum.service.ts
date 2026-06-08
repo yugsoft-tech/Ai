@@ -109,4 +109,38 @@ export class CurriculumService {
     }
     return chapter;
   }
+
+  async findDistinctClasses(tenantId: string): Promise<string[]> {
+    const result = await this.bookRepository
+      .createQueryBuilder('book')
+      .select('book.class', 'class')
+      .where('book.tenantId = :tenantId', { tenantId })
+      .distinct(true)
+      .getRawMany();
+    return result.map((r) => r.class);
+  }
+
+  async findSubjectsByClass(
+    tenantId: string,
+    className: string,
+  ): Promise<{ id: string; name: string }[]> {
+    const books = await this.bookRepository.find({
+      where: { tenantId, class: className },
+      select: { id: true, subject: true },
+      order: { subject: 'ASC' },
+    });
+    return books.map((b) => ({ id: b.id, name: b.subject }));
+  }
+
+  async findChaptersBySubject(
+    tenantId: string,
+    subjectId: string,
+  ): Promise<Chapter[]> {
+    // subjectId corresponds to bookId in our schema
+    await this.findBook(tenantId, subjectId);
+    return this.chapterRepository.find({
+      where: { bookId: subjectId },
+      order: { createdAt: 'ASC' },
+    });
+  }
 }

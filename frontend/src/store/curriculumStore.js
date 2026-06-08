@@ -2,46 +2,135 @@ import { create } from 'zustand';
 import api from '@/services/api';
 
 const useCurriculumStore = create((set, get) => ({
-  books: [],
-  selectedBookId: '',
+  classes: [],
+  subjects: [],
+  chapters: [],
+  
+  selectedClassId: '',
+  selectedSubjectId: '',
   selectedChapterId: '',
-  isLoading: false,
+  
+  isClassesLoading: false,
+  isSubjectsLoading: false,
+  isChaptersLoading: false,
 
-  fetchBooks: async () => {
-    set({ isLoading: true });
+  chapterDetails: null,
+  isChapterDetailsLoading: false,
+
+  fetchClasses: async () => {
+    set({ isClassesLoading: true });
     try {
-      const response = await api.get('/curriculum/books');
-      // The API response might wrap the actual data under 'data' due to NestJS conventions or the TransformInterceptor
+      const response = await api.get('/curriculum/classes');
       const data = response.data?.data || response.data;
-      const books = Array.isArray(data) ? data : [];
-      
-      set({ books });
+      const classes = Array.isArray(data) ? data : [];
+      set({ classes });
 
-      // If we have books and no book is selected yet, default select the first book and chapter
-      if (books.length > 0 && !get().selectedBookId) {
-        const firstBook = books[0];
-        set({ selectedBookId: firstBook.id });
-        if (firstBook.chapters && firstBook.chapters.length > 0) {
-          set({ selectedChapterId: firstBook.chapters[0].id });
-        }
+      if (classes.length > 0 && !get().selectedClassId) {
+        get().setSelectedClassId(classes[0]);
       }
     } catch (err) {
-      console.warn('Failed to fetch books in curriculumStore:', err.message);
+      console.warn('Failed to fetch classes:', err.message);
+      set({ classes: [] });
     } finally {
-      set({ isLoading: false });
+      set({ isClassesLoading: false });
     }
   },
 
-  setSelectedBookId: (bookId) => {
-    const book = get().books.find((b) => b.id === bookId);
-    set({
-      selectedBookId: bookId,
-      selectedChapterId: book?.chapters?.[0]?.id || '',
+  fetchSubjects: async (classId) => {
+    if (!classId) return;
+    set({ isSubjectsLoading: true });
+    try {
+      const response = await api.get(`/curriculum/subjects?classId=${encodeURIComponent(classId)}`);
+      const data = response.data?.data || response.data;
+      const subjects = Array.isArray(data) ? data : [];
+      set({ subjects });
+
+      if (subjects.length > 0) {
+        get().setSelectedSubjectId(subjects[0].id);
+      } else {
+        get().setSelectedSubjectId('');
+      }
+    } catch (err) {
+      console.warn('Failed to fetch subjects:', err.message);
+      set({ subjects: [] });
+    } finally {
+      set({ isSubjectsLoading: false });
+    }
+  },
+
+  fetchChapters: async (subjectId) => {
+    if (!subjectId) return;
+    set({ isChaptersLoading: true });
+    try {
+      const response = await api.get(`/curriculum/chapters?subjectId=${encodeURIComponent(subjectId)}`);
+      const data = response.data?.data || response.data;
+      const chapters = Array.isArray(data) ? data : [];
+      set({ chapters });
+
+      if (chapters.length > 0) {
+        get().setSelectedChapterId(chapters[0].id);
+      } else {
+        get().setSelectedChapterId('');
+      }
+    } catch (err) {
+      console.warn('Failed to fetch chapters:', err.message);
+      set({ chapters: [] });
+    } finally {
+      set({ isChaptersLoading: false });
+    }
+  },
+
+  fetchChapterDetails: async (subjectId, chapterId) => {
+    if (!subjectId || !chapterId) {
+      set({ chapterDetails: null });
+      return;
+    }
+    set({ isChapterDetailsLoading: true });
+    try {
+      const response = await api.get(`/curriculum/books/${encodeURIComponent(subjectId)}/chapters/${encodeURIComponent(chapterId)}`);
+      const data = response.data?.data || response.data;
+      set({ chapterDetails: data });
+    } catch (err) {
+      console.warn('Failed to fetch chapter details:', err.message);
+      set({ chapterDetails: null });
+    } finally {
+      set({ isChapterDetailsLoading: false });
+    }
+  },
+
+  setSelectedClassId: (classId) => {
+    set({ 
+      selectedClassId: classId,
+      selectedSubjectId: '',
+      selectedChapterId: '',
+      subjects: [],
+      chapters: [],
+      chapterDetails: null,
     });
+    if (classId) {
+      get().fetchSubjects(classId);
+    }
+  },
+
+  setSelectedSubjectId: (subjectId) => {
+    set({ 
+      selectedSubjectId: subjectId,
+      selectedChapterId: '',
+      chapters: [],
+      chapterDetails: null,
+    });
+    if (subjectId) {
+      get().fetchChapters(subjectId);
+    }
   },
 
   setSelectedChapterId: (chapterId) => {
     set({ selectedChapterId: chapterId });
+    if (chapterId) {
+      get().fetchChapterDetails(get().selectedSubjectId, chapterId);
+    } else {
+      set({ chapterDetails: null });
+    }
   },
 }));
 

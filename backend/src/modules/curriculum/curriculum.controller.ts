@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -90,5 +91,26 @@ export class CurriculumController {
       bookId,
       chapterId,
     );
+  }
+
+  @Get('classes')
+  findClasses(@CurrentUser() user: AuthenticatedUser) {
+    return this.curriculumService.findDistinctClasses(user.tenantId);
+  }
+
+  @Get('subjects')
+  findSubjects(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('classId') classId: string,
+  ) {
+    return this.curriculumService.findSubjectsByClass(user.tenantId, classId);
+  }
+
+  @Get('chapters')
+  findChaptersBySubject(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('subjectId') subjectId: string,
+  ) {
+    return this.curriculumService.findChaptersBySubject(user.tenantId, subjectId);
   }
 }

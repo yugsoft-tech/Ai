@@ -43,7 +43,14 @@ export default function LoginPage() {
       const data = response.data?.data || response.data;
       const { accessToken, user } = data;
       setAuth(user, accessToken);
-      router.push('/teacher'); // Redirect to dashboard
+      
+      if (user?.role?.toLowerCase() === 'admin') {
+        router.push('/admin');
+      } else if (user?.role?.toLowerCase() === 'student') {
+        router.push('/student');
+      } else {
+        router.push('/teacher');
+      }
     } catch (err) {
       const apiError = err.response?.data?.message;
       let errorMsg = '';
@@ -113,7 +120,7 @@ export default function LoginPage() {
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2 flex justify-between">
               Password
-              <a href="#" className="text-neon-purple hover:text-white transition-colors">Forgot?</a>
+              <Link href="/forgot-password" className="text-neon-purple hover:text-white transition-colors">Forgot?</Link>
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

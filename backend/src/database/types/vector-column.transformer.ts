@@ -1,6 +1,6 @@
 import { ValueTransformer } from 'typeorm';
 
-/** TypeORM transformer for pgvector columns (1536-dim OpenAI embeddings). */
+/** TypeORM transformer for pgvector columns (768-dim embeddings). */
 export const vectorTransformer: ValueTransformer = {
   to: (value: number[] | null | undefined): string | null => {
     if (!value?.length) return null;

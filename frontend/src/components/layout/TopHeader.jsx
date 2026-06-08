@@ -1,53 +1,37 @@
 import React, { useEffect } from 'react';
 import Dropdown from '@/components/ui/Dropdown';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Loader2 } from 'lucide-react';
 import useCurriculumStore from '@/store/curriculumStore';
 
 export default function TopHeader() {
   const {
-    books,
-    selectedBookId,
+    classes,
+    subjects,
+    chapters,
+    selectedClassId,
+    selectedSubjectId,
     selectedChapterId,
-    fetchBooks,
-    setSelectedBookId,
+    isClassesLoading,
+    isSubjectsLoading,
+    isChaptersLoading,
+    fetchClasses,
+    setSelectedClassId,
+    setSelectedSubjectId,
     setSelectedChapterId,
   } = useCurriculumStore();
 
   useEffect(() => {
-    fetchBooks();
-  }, [fetchBooks]);
-
-  // Derived dropdown option lists
-  const classes = Array.from(new Set(books.map((b) => b.class)));
-  
-  // Find current book to resolve class & subject
-  const selectedBook = books.find((b) => b.id === selectedBookId);
-  const selectedClass = selectedBook?.class || '';
-  const selectedSubject = selectedBook?.subject || '';
-
-  // Subjects matching current class
-  const subjects = books
-    .filter((b) => b.class === selectedClass)
-    .map((b) => b.subject);
-  const uniqueSubjects = Array.from(new Set(subjects));
-
-  // Chapters matching current book
-  const chapters = selectedBook?.chapters || [];
-  const selectedChapter = chapters.find((c) => c.id === selectedChapterId);
+    fetchClasses();
+  }, [fetchClasses]);
 
   const handleClassChange = (classVal) => {
-    const matchingBook = books.find((b) => b.class === classVal);
-    if (matchingBook) {
-      setSelectedBookId(matchingBook.id);
-    }
+    setSelectedClassId(classVal);
   };
 
-  const handleSubjectChange = (subjectVal) => {
-    const matchingBook = books.find(
-      (b) => b.class === selectedClass && b.subject === subjectVal,
-    );
-    if (matchingBook) {
-      setSelectedBookId(matchingBook.id);
+  const handleSubjectChange = (subjectName) => {
+    const matchingSubject = subjects.find((s) => s.name === subjectName);
+    if (matchingSubject) {
+      setSelectedSubjectId(matchingSubject.id);
     }
   };
 
@@ -58,36 +42,42 @@ export default function TopHeader() {
     }
   };
 
+  const selectedSubject = subjects.find((s) => s.id === selectedSubjectId);
+  const selectedChapter = chapters.find((c) => c.id === selectedChapterId);
+
   return (
     <header className="h-[70px] w-full flex items-center justify-between px-6 z-20">
       {/* Pill-shaped frosted glass bar for selections */}
       <div className="glass-panel rounded-full px-6 py-2 flex items-center gap-4 flex-1 max-w-3xl">
-        <div className="w-1/3">
+        <div className="w-1/3 relative flex items-center">
           <Dropdown 
             options={classes.length > 0 ? classes : ['Grade 10']} 
             placeholder="Select Class" 
-            value={selectedClass} 
+            value={selectedClassId} 
             onChange={handleClassChange}
-            className="w-full"
+            className={`w-full ${isClassesLoading ? 'opacity-50 pointer-events-none' : ''}`}
           />
+          {isClassesLoading && <Loader2 size={16} className="animate-spin text-neon-purple absolute right-8" />}
         </div>
-        <div className="w-1/3">
+        <div className="w-1/3 relative flex items-center">
           <Dropdown 
-            options={uniqueSubjects.length > 0 ? uniqueSubjects : ['Computer Science']} 
+            options={subjects.length > 0 ? subjects.map(s => s.name) : ['Computer Science']} 
             placeholder="Select Subject" 
-            value={selectedSubject} 
+            value={selectedSubject?.name || ''} 
             onChange={handleSubjectChange}
-            className="w-full"
+            className={`w-full ${isSubjectsLoading ? 'opacity-50 pointer-events-none' : ''}`}
           />
+          {isSubjectsLoading && <Loader2 size={16} className="animate-spin text-neon-purple absolute right-8" />}
         </div>
-        <div className="w-1/3">
+        <div className="w-1/3 relative flex items-center">
           <Dropdown 
             options={chapters.length > 0 ? chapters.map((c) => c.title) : ['Ch 2: Core Concepts']} 
             placeholder="Select Chapter" 
             value={selectedChapter?.title || ''} 
             onChange={handleChapterChange}
-            className="w-full"
+            className={`w-full ${isChaptersLoading ? 'opacity-50 pointer-events-none' : ''}`}
           />
+          {isChaptersLoading && <Loader2 size={16} className="animate-spin text-neon-purple absolute right-8" />}
         </div>
       </div>
 

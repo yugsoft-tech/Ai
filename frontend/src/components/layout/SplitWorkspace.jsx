@@ -1,6 +1,11 @@
 import React from 'react';
+import useCurriculumStore from '@/store/curriculumStore';
+import { Loader2 } from 'lucide-react';
 
 export default function SplitWorkspace({ children }) {
+  const { chapterDetails, isChapterDetailsLoading } = useCurriculumStore();
+  const chapterTitle = chapterDetails?.title || 'No Chapter Selected';
+
   return (
     <div className="flex-1 flex overflow-hidden p-6 gap-6 pt-0">
       {/* Left Workspace Panel (Fixed 40%) - Textbook Reader */}
@@ -8,36 +13,31 @@ export default function SplitWorkspace({ children }) {
         {/* Sticky Header */}
         <div className="sticky top-0 z-10 bg-obsidian/80 backdrop-blur-md border-b border-glass-border p-4">
           <h2 className="text-lg font-semibold text-white">Textbook Reader</h2>
-          <p className="text-xs text-gray-400">Chapter 2: Core Concepts - Page 42</p>
+          <p className="text-xs text-gray-400">{chapterTitle}</p>
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 text-gray-300 leading-relaxed text-sm">
-          <p>
-            The fundamental principles of artificial intelligence are rooted in the concept of machine learning,
-            where systems improve their performance on a given task by analyzing vast amounts of data.
-          </p>
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 text-gray-300 leading-relaxed text-sm relative">
+          {isChapterDetailsLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-obsidian/50 z-10">
+              <Loader2 className="animate-spin text-neon-purple w-8 h-8" />
+            </div>
+          )}
           
-          <div className="p-4 rounded-xl bg-neon-purple/10 border border-neon-purple/30">
-            <h4 className="text-neon-purple font-medium mb-2">Key Concept Highlight</h4>
-            <p className="text-gray-200">
-              Neural networks mimic the human brain's interconnected neuron structure, allowing complex pattern recognition
-              and deep learning capabilities.
-            </p>
-          </div>
+          {chapterDetails?.chunks?.length > 0 ? (
+            chapterDetails.chunks.map((chunk, index) => (
+              <p key={chunk.id || index}>
+                {chunk.contentText}
+              </p>
+            ))
+          ) : (
+            !isChapterDetailsLoading && (
+              <div className="text-gray-500 italic text-center mt-10">
+                No content available for this chapter.
+              </div>
+            )
+          )}
 
-          <p>
-            In natural language processing (NLP), models use these networks to understand context, semantics, and syntax.
-            This forms the basis for modern conversational agents and generative models.
-            <br/><br/>
-            Another crucial aspect is reinforcement learning, where an agent learns to make decisions by performing actions
-            in an environment to maximize a reward signal. This approach has led to significant breakthroughs in robotics
-            and complex game playing.
-          </p>
-          <p>
-            The integration of these technologies into educational software enables personalized learning pathways,
-            instant feedback, and adaptive testing mechanisms that cater to the unique needs of each student.
-          </p>
           <div className="h-20"></div> {/* Spacer for scroll bottom */}
         </div>
       </div>
