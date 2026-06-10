@@ -9,6 +9,7 @@ export interface VectorSearchResult {
   chapterId: string;
   chapterTitle: string;
   contentText: string;
+  pageNumber: number | null;
   similarity: number;
 }
 
@@ -36,23 +37,24 @@ export class VectorSearchService {
       .innerJoin('chunk.chapter', 'chapter')
       .innerJoin('chapter.book', 'book')
       .select('chunk.id', 'id')
-      .addSelect('chunk.chapter_id', 'chapterId')
+      .addSelect('chunk.chapterId', 'chapterId')
       .addSelect('chapter.title', 'chapterTitle')
-      .addSelect('chunk.content_text', 'contentText')
+      .addSelect('chunk.contentText', 'contentText')
+      .addSelect('chunk.pageNumber', 'pageNumber')
       .addSelect(
         `1 - (chunk.embedding <=> '${vectorLiteral}'::vector)`,
         'similarity',
       )
-      .where('book.tenant_id = :tenantId', { tenantId })
+      .where('book.tenantId = :tenantId', { tenantId })
       .andWhere('chunk.embedding IS NOT NULL');
 
     if (options.chapterId) {
-      qb.andWhere('chunk.chapter_id = :chapterId', {
+      qb.andWhere('chunk.chapterId = :chapterId', {
         chapterId: options.chapterId,
       });
     }
     if (options.bookId) {
-      qb.andWhere('chapter.book_id = :bookId', { bookId: options.bookId });
+      qb.andWhere('chapter.bookId = :bookId', { bookId: options.bookId });
     }
 
     const rows = await qb

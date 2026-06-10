@@ -30,10 +30,10 @@ export class AiOrchestratorService {
       topK: 5,
     });
     const context = ragResults
-      .map((r, i) => `[${i + 1}] (sim=${r.similarity.toFixed(3)})\n${r.contentText}`)
+      .map((r, i) => `[${i + 1}] (sim=${r.similarity ? Number(r.similarity).toFixed(2) : '0.00'})\n${r.contentText}`)
       .join('\n\n');
 
-    let content: string;
+    let content: any;
     switch (tool) {
       case 'worksheet':
         content = await this.worksheet.generate(dto, context);
@@ -51,10 +51,12 @@ export class AiOrchestratorService {
         content = '';
     }
 
-    return {
+    const result = {
       tool,
       content,
       sources: ragResults,
     };
+    console.log('--- ORCHESTRATOR RESULT ---', JSON.stringify(result).slice(0, 500));
+    return result;
   }
 }

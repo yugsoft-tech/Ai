@@ -1,100 +1,101 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse');
+import { Injectable, BadRequestException, ServiceUnavailableException, Logger } from '@nestjs/common';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+import { v4 as uuidv4 } from 'uuid';
+import * as pdfPoppler from 'pdf-poppler';
+import * as Tesseract from 'tesseract.js';
+
+export interface PageText {
+  pageNumber: number;
+  text: string;
+}
 
 @Injectable()
 export class PdfExtractionService {
-  async extractText(buffer: Buffer): Promise<string> {
+  private readonly logger = new Logger(PdfExtractionService.name);
+
+  async extractText(buffer: Buffer): Promise<PageText[]> {
     if (!buffer?.length) {
       throw new BadRequestException('Empty PDF buffer');
     }
-    const result = await pdfParse(buffer);
-    const text = (result.text as string)?.trim();
-    if (!text) {
-      throw new BadRequestException('No extractable text found in PDF');
-    }
-    
-    // Clean and de-duplicate the text before returning
-    return this.cleanExtractedText(text);
-  }
 
-  private deDuplicateSubstrings(word: string): string {
-    if (/^\d+$/.test(word)) return word;
+    const tempDirId = uuidv4();
+    const tempDirPath = path.join(os.tmpdir(), tempDirId);
+    const tempPdfPath = path.join(tempDirPath, 'document.pdf');
+    const pages: PageText[] = [];
 
-    const n = word.length;
-    for (let len = 2; len <= Math.floor(n / 2); len++) {
-      if (n % len === 0) {
-        const pattern = word.substring(0, len);
-        let isRepeating = true;
-        for (let i = len; i < n; i += len) {
-          if (word.substring(i, i + len) !== pattern) {
-            isRepeating = false;
-            break;
-          }
-        }
-        if (isRepeating) {
-          if (/[a-zA-Z]/.test(pattern)) {
-            return pattern;
-          }
-        }
-      }
-    }
-    return word;
-  }
+    try {
+      // 1. Setup Temporary Directory
+      await fs.promises.mkdir(tempDirPath, { recursive: true });
+      await fs.promises.writeFile(tempPdfPath, buffer);
 
-  private deDuplicatePhrases(str: string): string {
-    let result = str;
-    let prev;
-    do {
-      prev = result;
-      result = result.replace(/(.{3,})\s*\1/gi, '$1');
-    } while (result !== prev);
-    return result;
-  }
-
-  private cleanExtractedText(text: string): string {
-    if (!text) return '';
-
-    const lines = text.split(/\r?\n/);
-    const cleanedLines = lines.map((line) => {
-      let l = line.replace(/\s+/g, ' ').trim();
-      if (!l) return '';
-
-      // De-duplicate phrases first at line level
-      l = this.deDuplicatePhrases(l);
-
-      const words = l.split(' ');
-      const cleanedWords = words.map((word) => this.deDuplicateSubstrings(word));
-
-      const dedupedWords: string[] = [];
-      for (const w of cleanedWords) {
-        if (
-          dedupedWords.length === 0 ||
-          w.toLowerCase() !== dedupedWords[dedupedWords.length - 1].toLowerCase()
-        ) {
-          dedupedWords.push(w);
+      // 2. Convert PDF to Images
+      const popplerOpts = {
+        format: 'jpeg',
+        out_dir: tempDirPath,
+        out_prefix: 'page',
+        page: null, // all pages
+      };
+      
+      // Inject portable poppler to PATH dynamically
+      const portablePopplerPath = path.join(process.cwd(), 'poppler', 'poppler-24.08.0', 'Library', 'bin');
+      if (fs.existsSync(portablePopplerPath)) {
+        if (!process.env.PATH?.includes(portablePopplerPath)) {
+          process.env.PATH = `${portablePopplerPath};${process.env.PATH}`;
         }
       }
 
-      return dedupedWords.join(' ');
-    });
+      this.logger.log(`Converting PDF to images in ${tempDirPath}`);
+      await pdfPoppler.convert(tempPdfPath, popplerOpts);
 
-    const resultLines: string[] = [];
-    for (let line of cleanedLines) {
-      line = line.trim();
-      if (!line) continue;
+      // 3. Find generated images
+      const files = await fs.promises.readdir(tempDirPath);
+      const imageFiles = files
+        .filter(f => f.endsWith('.jpg') || f.endsWith('.jpeg'))
+        // pdf-poppler generates files like page-1.jpg, page-2.jpg
+        // Need to sort them correctly
+        .sort((a, b) => {
+          const numA = parseInt(a.replace(/[^0-9]/g, ''), 10) || 0;
+          const numB = parseInt(b.replace(/[^0-9]/g, ''), 10) || 0;
+          return numA - numB;
+        });
 
-      if (
-        resultLines.length > 0 &&
-        line.toLowerCase() === resultLines[resultLines.length - 1].toLowerCase()
-      ) {
-        continue;
+      if (imageFiles.length === 0) {
+        throw new BadRequestException('Could not extract any pages from the PDF. Ensure poppler-utils is installed.');
       }
 
-      line = this.deDuplicatePhrases(line);
-      resultLines.push(line);
-    }
+      this.logger.log(`Found ${imageFiles.length} pages. Starting Tesseract OCR...`);
 
-    return resultLines.join('\n');
+      // 4. Run Tesseract OCR sequentially to avoid memory bloat
+      let pageIndex = 1;
+      for (const imgFile of imageFiles) {
+        const imgPath = path.join(tempDirPath, imgFile);
+        this.logger.log(`Running OCR on page ${pageIndex}/${imageFiles.length}...`);
+        
+        const { data } = await Tesseract.recognize(imgPath, 'eng');
+        
+        pages.push({
+          pageNumber: pageIndex,
+          text: data.text.trim() || '[Blank Page]'
+        });
+        pageIndex++;
+      }
+
+      this.logger.log(`OCR complete. Extracted ${pages.length} pages.`);
+      return pages;
+
+    } catch (error: any) {
+      this.logger.error(`OCR Extraction failed: ${error.message}`, error.stack);
+      throw new ServiceUnavailableException(`OCR Extraction failed: ${error.message}`);
+    } finally {
+      // 5. Cleanup Temporary Files
+      try {
+        await fs.promises.rm(tempDirPath, { recursive: true, force: true });
+        this.logger.log(`Cleaned up temporary directory: ${tempDirPath}`);
+      } catch (cleanupError: any) {
+        this.logger.error(`Failed to clean up temp directory ${tempDirPath}: ${cleanupError.message}`);
+      }
+    }
   }
 }

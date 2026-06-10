@@ -111,23 +111,37 @@ export class CurriculumService {
     return chapter;
   }
 
-  async updateChapter(
-    tenantId: string,
-    bookId: string,
-    chapterId: string,
-    dto: UpdateChapterDto,
-  ): Promise<Chapter> {
-    const chapter = await this.findChapter(tenantId, bookId, chapterId);
-    Object.assign(chapter, dto);
-    return this.chapterRepository.save(chapter);
+  async findDistinctClasses(tenantId: string): Promise<string[]> {
+    const result = await this.bookRepository
+      .createQueryBuilder('book')
+      .select('book.class', 'class')
+      .where('book.tenantId = :tenantId', { tenantId })
+      .distinct(true)
+      .getRawMany();
+    return result.map((r) => r.class);
   }
 
-  async deleteChapter(
+  async findSubjectsByClass(
     tenantId: string,
-    bookId: string,
-    chapterId: string,
-  ): Promise<void> {
-    const chapter = await this.findChapter(tenantId, bookId, chapterId);
-    await this.chapterRepository.remove(chapter);
+    className: string,
+  ): Promise<{ id: string; name: string }[]> {
+    const books = await this.bookRepository.find({
+      where: { tenantId, class: className },
+      select: { id: true, subject: true },
+      order: { subject: 'ASC' },
+    });
+    return books.map((b) => ({ id: b.id, name: b.subject }));
+  }
+
+  async findChaptersBySubject(
+    tenantId: string,
+    subjectId: string,
+  ): Promise<Chapter[]> {
+    // subjectId corresponds to bookId in our schema
+    await this.findBook(tenantId, subjectId);
+    return this.chapterRepository.find({
+      where: { bookId: subjectId },
+      order: { createdAt: 'ASC' },
+    });
   }
 }

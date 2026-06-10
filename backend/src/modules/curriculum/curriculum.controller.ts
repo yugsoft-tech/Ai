@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -93,33 +94,24 @@ export class CurriculumController {
     );
   }
 
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  @Patch('books/:bookId/chapters/:chapterId')
-  updateChapter(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param('bookId') bookId: string,
-    @Param('chapterId') chapterId: string,
-    @Body() dto: UpdateChapterDto,
-  ) {
-    return this.curriculumService.updateChapter(
-      user.tenantId,
-      bookId,
-      chapterId,
-      dto,
-    );
+  @Get('classes')
+  findClasses(@CurrentUser() user: AuthenticatedUser) {
+    return this.curriculumService.findDistinctClasses(user.tenantId);
   }
 
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  @Delete('books/:bookId/chapters/:chapterId')
-  deleteChapter(
+  @Get('subjects')
+  findSubjects(
     @CurrentUser() user: AuthenticatedUser,
-    @Param('bookId') bookId: string,
-    @Param('chapterId') chapterId: string,
+    @Query('classId') classId: string,
   ) {
-    return this.curriculumService.deleteChapter(
-      user.tenantId,
-      bookId,
-      chapterId,
-    );
+    return this.curriculumService.findSubjectsByClass(user.tenantId, classId);
+  }
+
+  @Get('chapters')
+  findChaptersBySubject(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('subjectId') subjectId: string,
+  ) {
+    return this.curriculumService.findChaptersBySubject(user.tenantId, subjectId);
   }
 }

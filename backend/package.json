@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",
@@ -35,13 +36,14 @@
     "openai": "^6.42.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
-    "pdf-parse": "^1.1.1",
+    "pdf-poppler": "^0.2.3",
     "pdfkit": "^0.18.0",
     "pg": "^8.21.0",
     "pptxgenjs": "^4.0.1",
     "puppeteer": "^24.43.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "tesseract.js": "^7.0.0",
     "typeorm": "^1.0.0",
     "uuid": "^14.0.0"
   },

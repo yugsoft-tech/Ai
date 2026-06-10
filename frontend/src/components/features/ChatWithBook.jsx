@@ -2,12 +2,16 @@ import React, { useState, useRef, useEffect } from 'react';
 import GlassCard from '@/components/ui/GlassCard';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-import { Send, Sparkles, BookOpen, Loader2 } from 'lucide-react';
+import BookSelectionForm from '@/components/BookSelectionForm';
+import { Send, Sparkles, BookOpen, Loader2, RefreshCw } from 'lucide-react';
 import useCurriculumStore from '@/store/curriculumStore';
 import api from '@/services/api';
 
 export default function ChatWithBook() {
-  const { selectedBookId, selectedChapterId } = useCurriculumStore();
+  // null = show selection form; object = chat is active
+  const [selection, setSelection] = useState(null);
+  const { setSelectedSubjectId, setSelectedChapterId } = useCurriculumStore();
+
   const [messages, setMessages] = useState([
     {
       role: 'ai',
@@ -22,10 +26,10 @@ export default function ChatWithBook() {
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
-    
+
     const userMessage = { role: 'user', content: input };
     setMessages((prev) => [...prev, userMessage]);
-    
+
     const queryText = input;
     setInput('');
     setIsLoading(true);
@@ -33,8 +37,8 @@ export default function ChatWithBook() {
     try {
       const response = await api.post('/rag/chat', {
         query: queryText,
-        bookId: selectedBookId || undefined,
-        chapterId: selectedChapterId || undefined,
+        bookId: selection?.bookId || undefined,
+        chapterId: selection?.chapterId || undefined,
         history: messages.map((m) => ({
           role: m.role === 'user' ? 'user' : 'assistant',
           content: m.content,
@@ -44,7 +48,6 @@ export default function ChatWithBook() {
       const data = response.data?.data || response.data;
       const { answer, sources } = data;
 
-      // Extract the first source chapter title as citation
       const citation =
         sources && sources.length > 0
           ? sources[0].chapterTitle
@@ -65,7 +68,10 @@ export default function ChatWithBook() {
       } else if (apiError && typeof apiError === 'object') {
         errorMessage = apiError.message || JSON.stringify(apiError);
       } else {
-        errorMessage = err.response?.data?.error || err.message || 'Sorry, I could not complete the request. Please verify the backend is running and the OpenAI key is active.';
+        errorMessage =
+          err.response?.data?.error ||
+          err.message ||
+          'Sorry, I could not complete the request.';
       }
 
       setMessages((prev) => [
@@ -81,15 +87,51 @@ export default function ChatWithBook() {
     endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
+  // ── Step 1: Show BookSelectionForm (no periods field) ──
+  if (!selection) {
+    return (
+      <BookSelectionForm
+        hidePeriods
+        onGenerate={(data) => {
+          setSelection(data);
+          // Sync into curriculum store → Textbook Reader loads automatically
+          setSelectedSubjectId(data.bookId);
+          setSelectedChapterId(data.chapterId);
+        }}
+      />
+    );
+  }
+
+  // ── Step 2: Chat UI ──
   return (
     <GlassCard className="h-full flex flex-col relative p-0 overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-glass-border bg-obsidian/50 backdrop-blur-md flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BookOpen className="text-neon-purple" size={20} />
-          <h3 className="font-semibold text-white">Chat with Textbook</h3>
+          <div>
+            <h3 className="font-semibold text-white leading-tight">Chat with Textbook</h3>
+            <p className="text-xs text-gray-400 leading-tight mt-0.5">
+              {selection.chapterTitle}
+              <span className="mx-1.5 text-gray-600">·</span>
+              {selection.bookTitle}
+            </p>
+          </div>
         </div>
-        <Sparkles className="text-emerald-green" size={18} />
+        <div className="flex items-center gap-3">
+          <Sparkles className="text-emerald-green" size={18} />
+          <button
+            onClick={() => {
+              setSelection(null);
+              setSelectedSubjectId('');
+              setSelectedChapterId('');
+            }}
+            title="Change book / chapter"
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            <RefreshCw size={15} />
+          </button>
+        </div>
       </div>
 
       {/* Chat Area */}
@@ -97,10 +139,18 @@ export default function ChatWithBook() {
         {messages.map((msg, idx) => (
           <div
             key={idx}
-            className={`flex flex-col max-w-[80%] ${msg.role === 'user' ? 'self-end items-end ml-auto' : 'self-start items-start mr-auto'}`}
+            className={`flex flex-col max-w-[80%] ${
+              msg.role === 'user'
+                ? 'self-end items-end ml-auto'
+                : 'self-start items-start mr-auto'
+            }`}
           >
             <div
-              className={`p-4 rounded-2xl ${msg.role === 'user' ? 'bg-neon-purple text-white rounded-br-sm box-shadow-glow-purple' : 'bg-white/10 text-gray-200 rounded-bl-sm border border-white/5'}`}
+              className={`p-4 rounded-2xl ${
+                msg.role === 'user'
+                  ? 'bg-neon-purple text-white rounded-br-sm box-shadow-glow-purple'
+                  : 'bg-white/10 text-gray-200 rounded-bl-sm border border-white/5'
+              }`}
             >
               <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
             </div>
@@ -111,21 +161,13 @@ export default function ChatWithBook() {
             )}
           </div>
         ))}
+
         {isLoading && (
           <div className="flex flex-col max-w-[80%] self-start items-start mr-auto">
             <div className="p-4 rounded-2xl bg-white/10 text-gray-400 rounded-bl-sm border border-white/5 flex items-center gap-1.5">
-              <span
-                className="w-2.5 h-2.5 rounded-full bg-neon-purple animate-bounce"
-                style={{ animationDelay: '0ms' }}
-              ></span>
-              <span
-                className="w-2.5 h-2.5 rounded-full bg-neon-purple animate-bounce"
-                style={{ animationDelay: '150ms' }}
-              ></span>
-              <span
-                className="w-2.5 h-2.5 rounded-full bg-neon-purple animate-bounce"
-                style={{ animationDelay: '300ms' }}
-              ></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-neon-purple animate-bounce" style={{ animationDelay: '0ms' }}></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-neon-purple animate-bounce" style={{ animationDelay: '150ms' }}></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-neon-purple animate-bounce" style={{ animationDelay: '300ms' }}></span>
             </div>
           </div>
         )}
@@ -146,7 +188,7 @@ export default function ChatWithBook() {
           <Button
             variant="primary"
             onClick={handleSend}
-            className="absolute right-1 top-1 bottom-1 rounded-full px-3 py-1 !h-auto"
+            className="absolute right-1 top-1 bottom-1 rounded-full px-3 py-1 h-auto!"
             disabled={isLoading}
           >
             {isLoading ? (

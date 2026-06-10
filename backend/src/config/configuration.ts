@@ -27,6 +27,6 @@ export default () => ({
     chunkSize: parseInt(process.env.RAG_CHUNK_SIZE ?? '800', 10),
     chunkOverlap: parseInt(process.env.RAG_CHUNK_OVERLAP ?? '100', 10),
     topK: parseInt(process.env.RAG_TOP_K ?? '5', 10),
-    embeddingDimensions: parseInt(process.env.RAG_EMBEDDING_DIMENSIONS ?? '1536', 10),
+    embeddingDimensions: parseInt(process.env.RAG_EMBEDDING_DIMENSIONS ?? '768', 10),
   },
 });

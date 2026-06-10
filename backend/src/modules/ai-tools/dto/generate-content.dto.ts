@@ -20,6 +20,11 @@ export class GenerateContentDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(200)
+  chapterTitle?: string;
+
+  @IsOptional()
+  @IsString()
   @MaxLength(100)
   subject?: string;
 }

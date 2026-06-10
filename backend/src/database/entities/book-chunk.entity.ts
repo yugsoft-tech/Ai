@@ -26,6 +26,9 @@ export class BookChunk {
   @Column({ name: 'content_text', type: 'text' })
   contentText: string;
 
+  @Column({ name: 'page_number', type: 'int', nullable: true })
+  pageNumber: number | null;
+
   @Column({
     type: 'vector',
     length: 768,

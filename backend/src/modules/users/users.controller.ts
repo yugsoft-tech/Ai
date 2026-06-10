@@ -24,7 +24,7 @@ export class UsersController {
     return this.usersService.findById(user.id);
   }
 
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
   @Get()
   findAll(@CurrentUser() user: AuthenticatedUser) {
     return this.usersService.findAllByTenant(user.tenantId);

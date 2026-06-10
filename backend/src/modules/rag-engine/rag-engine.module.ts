@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Book } from '../../database/entities/book.entity';
 import { BookChunk } from '../../database/entities/book-chunk.entity';
 import { Chapter } from '../../database/entities/chapter.entity';
 import { RagEngineController } from './rag-engine.controller';
@@ -10,7 +11,7 @@ import { PdfExtractionService } from './services/pdf-extraction.service';
 import { VectorSearchService } from './services/vector-search.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Chapter, BookChunk])],
+  imports: [TypeOrmModule.forFeature([Book, Chapter, BookChunk])],
   controllers: [RagEngineController],
   providers: [
     RagEngineService,

@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { 
   MessageSquare, BookOpen, FileText, LayoutDashboard, 
   CheckCircle, Presentation, FilePenLine, User, Settings, LogOut
@@ -32,12 +33,11 @@ export default function Sidebar({ activeTool, setActiveTool }) {
 
   return (
     <div className="w-[250px] h-full flex flex-col glass-panel border-l-0 border-y-0 rounded-none z-10">
-      {/* Brand Logo */}
-      <div className="p-6">
+      <Link href="/dashboard" className="p-6 block hover:opacity-80 transition-opacity">
         <h1 className="text-2xl font-bold tracking-tighter text-white flex items-center gap-2">
           <span className="text-neon-purple text-shadow-glow-purple">Yugsoft</span> Tech
         </h1>
-      </div>
+      </Link>
 
       {/* Nav Links */}
       <div className="flex-1 overflow-y-auto custom-scrollbar px-3 py-4 space-y-2">

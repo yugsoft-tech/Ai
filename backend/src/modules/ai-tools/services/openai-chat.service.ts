@@ -25,7 +25,28 @@ export class OpenaiChatService {
     }
   }
 
-  private getMockResponse(userPrompt: string): string {
+  /**
+   * Strip markdown code fences that Gemini sometimes wraps around JSON output.
+   * e.g.  ```json\n{...}\n```  →  {...}
+   */
+  private stripMarkdownFences(raw: string): string {
+    return raw
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```\s*$/i, '')
+      .trim();
+  }
+
+  private getMockResponse(userPrompt: string, jsonMode: boolean = false): string {
+    if (jsonMode) {
+      return JSON.stringify({
+        chapterName: "Fallback Mock Plan",
+        theme: "Error/Timeout",
+        ncfGoals: "N/A",
+        learningObjectives: ["AI is busy, please retry."],
+        periods: []
+      });
+    }
+
     const prompt = userPrompt.toLowerCase();
 
     if (prompt.includes('lesson plan')) {
@@ -76,9 +97,9 @@ We detected that your API Key is missing or invalid. Please configure a valid Go
 Neural networks mimic the human brain's interconnected neuron structure, allowing complex pattern recognition and deep learning capabilities. In natural language processing (NLP), models use these networks to understand context, semantics, and syntax.`;
   }
 
-  async complete(systemPrompt: string, userPrompt: string): Promise<string> {
+  async complete(systemPrompt: string, userPrompt: string, jsonMode: boolean = false): Promise<string> {
     if (!this.apiKey) {
-      return this.getMockResponse(userPrompt);
+      return this.getMockResponse(userPrompt, jsonMode);
     }
 
     if (!this.isGemini && this.openaiClient) {
@@ -91,12 +112,16 @@ Neural networks mimic the human brain's interconnected neuron structure, allowin
             { role: 'user', content: userPrompt },
           ],
           temperature: 0.7,
+          ...(jsonMode && { response_format: { type: 'json_object' } }),
         });
 
-        return response.choices[0]?.message?.content?.trim() ?? '';
+        const rawText = response.choices[0]?.message?.content?.trim() ?? '';
+        console.log('--- RAW OPENAI RESPONSE ---', rawText);
+        return this.stripMarkdownFences(rawText);
       } catch (err: any) {
-        console.warn('OpenAI API call failed, returning mock response:', err);
-        return this.getMockResponse(userPrompt);
+        console.error('OpenAI API call failed:', err?.message ?? err);
+        if (jsonMode) throw err; // let caller handle it
+        return this.getMockResponse(userPrompt, jsonMode);
       }
     } else {
       // Use Native Gemini REST API
@@ -124,6 +149,7 @@ Neural networks mimic the human brain's interconnected neuron structure, allowin
             ],
             generationConfig: {
               temperature: 0.7,
+              ...(jsonMode && { responseMimeType: 'application/json' }),
             },
           }),
         });
@@ -136,10 +162,13 @@ Neural networks mimic the human brain's interconnected neuron structure, allowin
           throw new Error(errorMsg);
         }
 
-        return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '';
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '';
+        console.log('--- RAW GEMINI RESPONSE ---', rawText);
+        return this.stripMarkdownFences(rawText);
       } catch (err: any) {
-        console.warn('Gemini API call failed, returning mock response:', err);
-        return this.getMockResponse(userPrompt);
+        console.error('Gemini API call failed:', err?.message ?? err);
+        if (jsonMode) throw err; // let caller handle it with a proper HTTP error
+        return this.getMockResponse(userPrompt, jsonMode);
       }
     }
   }
