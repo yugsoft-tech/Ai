@@ -216,41 +216,34 @@ export class RagEngineService {
       throw new NotFoundException('Chapter not found');
     }
 
+    // Step 2: Extract pages
     const pages = await this.pdfExtraction.extractText(fileBuffer);
-    const segments = this.chunking.semanticChunk(pages);
-    const embeddings = await this.embedding.embedTexts(
-      segments.map((s) => s.contentText),
-    );
 
     // Step 3: Chunk text
-    let segments: string[];
+    let subChunks: ReturnType<ChunkingService['semanticChunk']>;
     try {
-      segments = this.chunking.semanticChunk(text);
-      console.log(`[INGEST] Created ${segments.length} chunks`);
+      subChunks = this.chunking.semanticChunk(pages);
+      console.log(`[INGEST] Created ${subChunks.length} chunks`);
     } catch (e: any) {
       console.error('[INGEST] ERROR chunking text:', e.message, e.stack);
       throw e;
     }
 
-    const entities = segments.map((segment, index) =>
-      this.chunkRepository.create({
-        chapterId,
-        contentText: segment.contentText,
-        pageNumber: segment.pageNumber,
-        embedding: embeddings[index] ?? null,
-      }),
+    // Step 4: Embed chunks
+    const embeddings = await this.embedding.embedTexts(
+      subChunks.map((s) => s.contentText),
     );
-    await this.chunkRepository.save(entities);
 
     // Step 5: Clear old chunks and save new ones
     try {
       await this.chunkRepository.delete({ chapterId });
       console.log('[INGEST] Old chunks deleted');
 
-      const entities = segments.map((contentText, index) =>
+      const entities = subChunks.map((chunk, index) =>
         this.chunkRepository.create({
           chapterId,
-          contentText,
+          contentText: chunk.contentText,
+          pageNumber: chunk.pageNumber,
           embedding: embeddings[index] ?? null,
         }),
       );
