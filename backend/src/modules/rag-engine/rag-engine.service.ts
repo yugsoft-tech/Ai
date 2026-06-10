@@ -95,11 +95,23 @@ export class RagEngineService {
     chapterId: string,
     fileBuffer: Buffer,
   ): Promise<{ chunksCreated: number }> {
-    const chapter = await this.chapterRepository.findOne({
-      where: { id: chapterId },
-      relations: { book: true },
-    });
+    console.log(`[INGEST] Starting ingestPdf — chapterId=${chapterId}, tenantId=${tenantId}, bufferSize=${fileBuffer?.length ?? 0}`);
+
+    // Step 1: Find chapter
+    let chapter: Chapter | null = null;
+    try {
+      chapter = await this.chapterRepository.findOne({
+        where: { id: chapterId },
+        relations: { book: true },
+      });
+      console.log(`[INGEST] Chapter found: ${chapter?.id}, bookTenantId: ${chapter?.book?.tenantId}`);
+    } catch (e: any) {
+      console.error('[INGEST] ERROR finding chapter:', e.message, e.stack);
+      throw e;
+    }
+
     if (!chapter || chapter.book.tenantId !== tenantId) {
+      console.error(`[INGEST] Chapter not found or tenant mismatch. chapter=${!!chapter}, expected tenantId=${tenantId}`);
       throw new NotFoundException('Chapter not found');
     }
 
@@ -107,7 +119,15 @@ export class RagEngineService {
     const segments = this.chunking.semanticChunk(pages);
     const embeddings = await this.embedding.embedTexts(segments.map(s => s.contentText));
 
-    await this.chunkRepository.delete({ chapterId });
+    // Step 3: Chunk text
+    let segments: string[];
+    try {
+      segments = this.chunking.semanticChunk(text);
+      console.log(`[INGEST] Created ${segments.length} chunks`);
+    } catch (e: any) {
+      console.error('[INGEST] ERROR chunking text:', e.message, e.stack);
+      throw e;
+    }
 
     const entities = segments.map((segment, index) =>
       this.chunkRepository.create({
@@ -119,7 +139,26 @@ export class RagEngineService {
     );
     await this.chunkRepository.save(entities);
 
-    return { chunksCreated: entities.length };
+    // Step 5: Clear old chunks and save new ones
+    try {
+      await this.chunkRepository.delete({ chapterId });
+      console.log('[INGEST] Old chunks deleted');
+
+      const entities = segments.map((contentText, index) =>
+        this.chunkRepository.create({
+          chapterId,
+          contentText,
+          embedding: embeddings[index] ?? null,
+        }),
+      );
+      await this.chunkRepository.save(entities);
+      console.log(`[INGEST] Saved ${entities.length} chunks to DB successfully`);
+
+      return { chunksCreated: entities.length };
+    } catch (e: any) {
+      console.error('[INGEST] ERROR saving chunks to DB:', e.message, e.stack);
+      throw e;
+    }
   }
 
   async semanticSearch(tenantId: string, dto: SemanticSearchDto) {
