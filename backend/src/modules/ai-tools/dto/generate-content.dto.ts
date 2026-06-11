@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { IsOptional, IsString, IsUUID, MaxLength, IsArray } from 'class-validator';
 
 export class GenerateContentDto {
   @IsString()
@@ -27,4 +27,9 @@ export class GenerateContentDto {
   @IsString()
   @MaxLength(100)
   subject?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  customQuestions?: string[];
 }

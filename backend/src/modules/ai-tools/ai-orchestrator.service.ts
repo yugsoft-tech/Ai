@@ -5,6 +5,7 @@ import { HomeworkService } from './services/homework.service';
 import { LessonPlanService } from './services/lesson-plan.service';
 import { PptService } from './services/ppt.service';
 import { WorksheetService } from './services/worksheet.service';
+import { CustomWorksheetService } from './services/custom-worksheet.service';
 
 import { AiToolType } from './ai-tool-type';
 
@@ -13,6 +14,7 @@ export class AiOrchestratorService {
   constructor(
     private readonly ragEngine: RagEngineService,
     private readonly worksheet: WorksheetService,
+    private readonly customWorksheet: CustomWorksheetService,
     private readonly lessonPlan: LessonPlanService,
     private readonly ppt: PptService,
     private readonly homework: HomeworkService,
@@ -37,6 +39,9 @@ export class AiOrchestratorService {
     switch (tool) {
       case 'worksheet':
         content = await this.worksheet.generate(dto, context);
+        break;
+      case 'custom-worksheet':
+        content = await this.customWorksheet.generate(dto, context);
         break;
       case 'lesson-plan':
         content = await this.lessonPlan.generate(dto, context);

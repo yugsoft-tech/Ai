@@ -6,8 +6,6 @@ import {
 } from 'lucide-react';
 import useAuthStore from '@/store/authStore';
 
-import Link from 'next/link';
-
 const TOOLS = [
   { id: 'chat', label: 'Chat with Book', icon: MessageSquare },
   { id: 'lesson', label: 'AI Lesson Plan', icon: BookOpen },

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import api from '@/services/api';
 
 const useCurriculumStore = create((set, get) => ({
+  books: [],
   classes: [],
   subjects: [],
   chapters: [],
@@ -10,12 +11,28 @@ const useCurriculumStore = create((set, get) => ({
   selectedSubjectId: '',
   selectedChapterId: '',
   
+  isBooksLoading: false,
   isClassesLoading: false,
   isSubjectsLoading: false,
   isChaptersLoading: false,
 
   chapterDetails: null,
   isChapterDetailsLoading: false,
+
+  fetchBooks: async () => {
+    set({ isBooksLoading: true });
+    try {
+      const response = await api.get('/curriculum/books');
+      const data = response.data?.data || response.data;
+      const books = Array.isArray(data) ? data : [];
+      set({ books });
+    } catch (err) {
+      console.warn('Failed to fetch books:', err.message);
+      set({ books: [] });
+    } finally {
+      set({ isBooksLoading: false });
+    }
+  },
 
   fetchClasses: async () => {
     set({ isClassesLoading: true });
@@ -46,7 +63,10 @@ const useCurriculumStore = create((set, get) => ({
       set({ subjects });
 
       if (subjects.length > 0) {
-        get().setSelectedSubjectId(subjects[0].id);
+        const currentSelectedSubjectId = get().selectedSubjectId;
+        if (!currentSelectedSubjectId || !subjects.some(s => s.id === currentSelectedSubjectId)) {
+          get().setSelectedSubjectId(subjects[0].id);
+        }
       } else {
         get().setSelectedSubjectId('');
       }
@@ -68,7 +88,10 @@ const useCurriculumStore = create((set, get) => ({
       set({ chapters });
 
       if (chapters.length > 0) {
-        get().setSelectedChapterId(chapters[0].id);
+        const currentSelectedChapterId = get().selectedChapterId;
+        if (!currentSelectedChapterId || !chapters.some(c => c.id === currentSelectedChapterId)) {
+          get().setSelectedChapterId(chapters[0].id);
+        }
       } else {
         get().setSelectedChapterId('');
       }

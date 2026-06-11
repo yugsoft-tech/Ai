@@ -32,15 +32,15 @@ export default function UserDirectoryPage() {
 
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold text-white">Registered Users</h2>
-        <button className="px-4 py-2 bg-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.12)] border border-[rgba(255,255,255,0.1)] text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
+        <button className="px-4 py-2 bg-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.12)] border border-glass-border text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
           <span className="text-lg leading-none mb-0.5">+</span> Invite User
         </button>
       </div>
 
-      <div className="glass-panel rounded-xl overflow-hidden border border-[rgba(255,255,255,0.1)]">
+      <div className="glass-panel rounded-xl overflow-hidden border border-glass-border">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-400">
-            <thead className="bg-[rgba(255,255,255,0.02)] border-b border-[rgba(255,255,255,0.05)] text-xs uppercase tracking-wider text-gray-500">
+            <thead className="bg-[rgba(255,255,255,0.02)] border-b border-glass-bg text-xs uppercase tracking-wider text-gray-500">
               <tr>
                 <th className="px-6 py-4 font-semibold">User</th>
                 <th className="px-6 py-4 font-semibold">Role</th>
@@ -49,7 +49,7 @@ export default function UserDirectoryPage() {
                 <th className="px-6 py-4 text-right font-semibold">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(255,255,255,0.05)]">
+            <tbody className="divide-y divide-glass-bg">
               {isLoading ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
@@ -70,7 +70,7 @@ export default function UserDirectoryPage() {
                   <tr key={user.id} className="hover:bg-[rgba(255,255,255,0.02)] transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[rgba(255,255,255,0.05)] flex items-center justify-center border border-[rgba(255,255,255,0.1)]">
+                        <div className="w-10 h-10 rounded-full bg-glass-bg flex items-center justify-center border border-glass-border">
                           <span className="text-white font-bold uppercase">{displayName.charAt(0)}</span>
                         </div>
                         <div>
@@ -105,13 +105,13 @@ export default function UserDirectoryPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-xs">Recently</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-[rgba(255,255,255,0.05)]">
+                        <button className="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-glass-bg">
                           <Edit2 size={16} />
                         </button>
                         <button className="p-2 text-gray-500 hover:text-red-400 transition-colors rounded-lg hover:bg-[rgba(239,68,68,0.1)]">
                           <Trash2 size={16} />
                         </button>
-                        <button className="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-[rgba(255,255,255,0.05)]">
+                        <button className="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-glass-bg">
                           <MoreVertical size={16} />
                         </button>
                       </div>

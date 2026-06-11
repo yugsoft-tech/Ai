@@ -126,17 +126,17 @@ const TOOLS = [
 /* ─── Component ─────────────────────────────────────────────────── */
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="min-h-screen bg-obsidian text-white">
 
       {/* ── Top nav bar ── */}
       <header className="flex items-center justify-between px-8 py-5 border-b border-white/5">
         <Link href="/dashboard" className="text-2xl font-bold tracking-tighter hover:opacity-80 transition-opacity">
-          <span className="text-[#8b5cf6]">Yugsoft</span> Tech
+          <span className="text-neon-purple">Yugsoft</span> Tech
         </Link>
         <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
-          <div className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse shadow-[0_0_8px_#10b981]" />
-          <Sparkles size={13} className="text-[#10b981]" />
-          <span className="text-sm font-medium text-[#10b981]">RAG Engine Active</span>
+          <div className="w-2 h-2 rounded-full bg-emerald-green animate-pulse shadow-[0_0_8px_#10b981]" />
+          <Sparkles size={13} className="text-emerald-green" />
+          <span className="text-sm font-medium text-emerald-green">RAG Engine Active</span>
         </div>
       </header>
 
@@ -162,7 +162,7 @@ export default function DashboardPage() {
               >
                 {/* Gradient background blob */}
                 <div
-                  className={`absolute inset-0 bg-gradient-to-br ${tool.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+                  className={`absolute inset-0 bg-linear-to-br ${tool.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
                 />
 
                 {/* Content */}

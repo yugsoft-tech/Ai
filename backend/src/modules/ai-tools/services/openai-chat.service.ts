@@ -37,7 +37,32 @@ export class OpenaiChatService {
   }
 
   private getMockResponse(userPrompt: string, jsonMode: boolean = false): string {
+    const prompt = userPrompt.toLowerCase();
+
     if (jsonMode) {
+      if (prompt.includes('worksheet') || prompt.includes('question')) {
+        return JSON.stringify({
+          chapterTitle: "Mock Chapter",
+          mcqs: [
+            {
+              question: "What is a Neural Network?",
+              options: ["A) Biological brain", "B) Computational model", "C) A type of net"],
+              correctAnswer: "B) Computational model"
+            }
+          ],
+          trueFalse: [
+            { statement: "Activation functions introduce non-linearity.", answer: true }
+          ],
+          fillInTheBlanks: [
+            { question: "Supervised learning uses _____ training data.", answer: "labeled" }
+          ],
+          shortAnswer: [
+            { question: "What is a neuron?", options: null, answer: "A processing node." }
+          ],
+          vocabulary: []
+        });
+      }
+
       return JSON.stringify({
         chapterName: "Fallback Mock Plan",
         theme: "Error/Timeout",
@@ -47,7 +72,7 @@ export class OpenaiChatService {
       });
     }
 
-    const prompt = userPrompt.toLowerCase();
+
 
     if (prompt.includes('lesson plan')) {
       return `[
