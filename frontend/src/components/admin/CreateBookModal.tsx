@@ -40,7 +40,9 @@ export default function CreateBookModal({ isOpen, onClose, onSuccess }: CreateBo
     
     try {
       // 1. Create a Book entity in the DB
-      const bookTitle = file.name.replace('.pdf', '').replace(/_/g, ' ');
+      // Capitalize the first letter of the subject for better formatting
+      const formattedSubject = bookSubject.trim().charAt(0).toUpperCase() + bookSubject.trim().slice(1);
+      const bookTitle = `${formattedSubject} - Class ${bookClass.trim()}`;
       const bookRes = await api.post('/curriculum/books', {
         title: bookTitle,
         class: bookClass,
@@ -105,7 +107,7 @@ export default function CreateBookModal({ isOpen, onClose, onSuccess }: CreateBo
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-lg glass-panel rounded-2xl p-6 shadow-2xl border border-[rgba(255,255,255,0.1)] bg-[#0a0a0a]"
+            className="relative w-full max-w-lg glass-panel rounded-2xl p-6 shadow-2xl border border-glass-border bg-[#0a0a0a]"
           >
             <button
               onClick={onClose}
@@ -145,7 +147,7 @@ export default function CreateBookModal({ isOpen, onClose, onSuccess }: CreateBo
                       placeholder="e.g. 6, Grade 10" 
                       value={bookClass}
                       onChange={(e) => setBookClass(e.target.value)}
-                      className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-purple transition-colors"
+                      className="w-full bg-glass-bg border border-glass-border rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-purple transition-colors"
                     />
                   </div>
                   <div className="flex-1">
@@ -155,14 +157,14 @@ export default function CreateBookModal({ isOpen, onClose, onSuccess }: CreateBo
                       placeholder="e.g. english, Science" 
                       value={bookSubject}
                       onChange={(e) => setBookSubject(e.target.value)}
-                      className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-purple transition-colors"
+                      className="w-full bg-glass-bg border border-glass-border rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-purple transition-colors"
                     />
                   </div>
                 </div>
 
                 <div 
                   className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center transition-colors
-                    ${file ? 'border-neon-purple bg-neon-purple/5' : 'border-[rgba(255,255,255,0.1)] hover:border-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.02)]'}
+                    ${file ? 'border-neon-purple bg-neon-purple/5' : 'border-glass-border hover:border-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.02)]'}
                   `}
                 >
                   <input 
@@ -173,7 +175,7 @@ export default function CreateBookModal({ isOpen, onClose, onSuccess }: CreateBo
                     onChange={handleFileChange}
                   />
                   <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center w-full h-full">
-                    <div className="w-12 h-12 rounded-full bg-[rgba(255,255,255,0.05)] flex items-center justify-center mb-4">
+                    <div className="w-12 h-12 rounded-full bg-glass-bg flex items-center justify-center mb-4">
                       <Upload className="text-gray-400" size={24} />
                     </div>
                     {file ? (
@@ -193,7 +195,7 @@ export default function CreateBookModal({ isOpen, onClose, onSuccess }: CreateBo
                 <div className="flex gap-3 justify-end">
                   <button 
                     onClick={onClose}
-                    className="px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-[rgba(255,255,255,0.05)] transition-colors"
+                    className="px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-glass-bg transition-colors"
                   >
                     Cancel
                   </button>

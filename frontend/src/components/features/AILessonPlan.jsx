@@ -343,7 +343,7 @@ export default function AILessonPlan() {
             <label className="text-xs text-gray-400 mb-1 block">Theme</label>
             <Input defaultValue={lessonPlan.theme || 'N/A'} readOnly className="bg-black/20 text-gray-300" />
           </div>
-          <div className="flex-[2]">
+          <div className="flex-2">
             <label className="text-xs text-gray-400 mb-1 block">NCF Goals</label>
             <Input defaultValue={lessonPlan.ncfGoals || 'N/A'} readOnly className="bg-black/20 text-gray-300" />
           </div>
@@ -366,7 +366,7 @@ export default function AILessonPlan() {
         <div className="absolute left-[47px] top-8 bottom-8 w-0.5 bg-white/10 rounded-full" />
         {periods.map((period, i) => (
           <div key={i} className="flex gap-6 relative z-10">
-            <div className="w-20 flex-shrink-0 flex flex-col items-center">
+            <div className="w-20 shrink-0 flex flex-col items-center">
               <div className="w-4 h-4 rounded-full bg-emerald-green box-shadow-glow-green mb-1 z-10" />
               <span className="text-[11px] text-emerald-green font-mono font-bold mt-1">
                 Day {period.day}

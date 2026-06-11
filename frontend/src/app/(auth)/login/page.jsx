@@ -98,7 +98,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col justify-center items-center font-sans selection:bg-neon-purple selection:text-white px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-obsidian text-white flex flex-col justify-center items-center font-sans selection:bg-neon-purple selection:text-white px-4 relative overflow-hidden">
       {/* Background glowing effects */}
       <div className="absolute w-full h-full overflow-hidden z-0 pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-neon-purple/20 rounded-full blur-[120px]" />
@@ -146,7 +146,7 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2 flex justify-between">
+            <label className="flex text-sm font-medium text-gray-300 mb-2 justify-between">
               Password
               <Link href="/forgot-password" className="text-neon-purple hover:text-white transition-colors">Forgot?</Link>
             </label>
