@@ -27,7 +27,7 @@ export class VectorSearchService {
   async search(
     tenantId: string,
     queryEmbedding: number[],
-    options: { chapterId?: string; bookId?: string; topK?: number },
+    options: { chapterId?: string; chapterIds?: string[]; bookId?: string; topK?: number },
   ): Promise<VectorSearchResult[]> {
     const topK = options.topK ?? this.configService.get<number>('rag.topK') ?? 5;
     const vectorLiteral = `[${queryEmbedding.join(',')}]`;
@@ -48,7 +48,11 @@ export class VectorSearchService {
       .where('book.tenantId = :tenantId', { tenantId })
       .andWhere('chunk.embedding IS NOT NULL');
 
-    if (options.chapterId) {
+    if (options.chapterIds && options.chapterIds.length > 0) {
+      qb.andWhere('chunk.chapterId IN (:...chapterIds)', {
+        chapterIds: options.chapterIds,
+      });
+    } else if (options.chapterId) {
       qb.andWhere('chunk.chapterId = :chapterId', {
         chapterId: options.chapterId,
       });

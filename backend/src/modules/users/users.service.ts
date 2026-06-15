@@ -8,6 +8,8 @@ import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { UserRole } from '../../common/enums/role.enum';
 import { User } from '../../database/entities/user.entity';
+import { Tenant } from '../../database/entities/tenant.entity';
+import { TenantStatus } from '../../common/enums/tenant-status.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -25,6 +27,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Tenant)
+    private readonly tenantRepository: Repository<Tenant>,
   ) {}
 
   async create(input: CreateUserInput): Promise<User> {
@@ -43,6 +47,41 @@ export class UsersService {
       email: dto.email,
       passwordHash,
       role: dto.role,
+    });
+  }
+
+  async createTeacher(tenantId: string, dto: CreateUserDto): Promise<User> {
+    const existing = await this.findByEmailGlobal(dto.email);
+    if (existing) {
+      throw new ConflictException('Email already exists');
+    }
+    const passwordHash = await bcrypt.hash(dto.password, this.saltRounds);
+    return this.create({
+      tenantId,
+      email: dto.email,
+      passwordHash,
+      role: UserRole.TEACHER,
+    });
+  }
+
+  async createSchool(dto: CreateUserDto & { tenantName: string }): Promise<User> {
+    const existing = await this.findByEmailGlobal(dto.email);
+    if (existing) {
+      throw new ConflictException('Email already exists');
+    }
+
+    const tenant = this.tenantRepository.create({
+      name: dto.tenantName,
+      status: TenantStatus.ACTIVE,
+    });
+    const savedTenant = await this.tenantRepository.save(tenant);
+
+    const passwordHash = await bcrypt.hash(dto.password, this.saltRounds);
+    return this.create({
+      tenantId: savedTenant.id,
+      email: dto.email,
+      passwordHash,
+      role: UserRole.SCHOOL_ADMIN,
     });
   }
 

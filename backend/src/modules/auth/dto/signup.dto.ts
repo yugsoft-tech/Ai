@@ -9,6 +9,9 @@ import {
 import { UserRole } from '../../../common/enums/role.enum';
 
 export class SignupDto {
+  @IsOptional()
+  @IsEnum(UserRole)
+  role?: UserRole;
   @IsEmail()
   email: string;
 
@@ -24,8 +27,4 @@ export class SignupDto {
   @IsString()
   @MinLength(2)
   tenantName?: string;
-
-  @IsOptional()
-  @IsEnum(UserRole)
-  role?: UserRole;
 }

@@ -9,6 +9,7 @@ import { ChunkingService } from './services/chunking.service';
 import { EmbeddingService } from './services/embedding.service';
 import { PdfExtractionService } from './services/pdf-extraction.service';
 import { VectorSearchService } from './services/vector-search.service';
+import { ChapterDetectionService } from './services/chapter-detection.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Book, Chapter, BookChunk])],
@@ -19,6 +20,7 @@ import { VectorSearchService } from './services/vector-search.service';
     ChunkingService,
     EmbeddingService,
     VectorSearchService,
+    ChapterDetectionService,
   ],
   exports: [RagEngineService, VectorSearchService, EmbeddingService],
 })

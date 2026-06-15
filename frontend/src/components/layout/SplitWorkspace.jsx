@@ -2,14 +2,15 @@ import React from 'react';
 import useCurriculumStore from '@/store/curriculumStore';
 import { Loader2 } from 'lucide-react';
 
-export default function SplitWorkspace({ children }) {
+export default function SplitWorkspace({ children, showReader = true }) {
   const { chapterDetails, isChapterDetailsLoading } = useCurriculumStore();
   const chapterTitle = chapterDetails?.title || 'No Chapter Selected';
 
   return (
     <div className="flex-1 flex overflow-hidden p-6 gap-6 pt-0">
       {/* Left Workspace Panel (Fixed 40%) - Textbook Reader */}
-      <div className="w-[40%] h-full flex flex-col glass-panel rounded-2xl overflow-hidden relative">
+      {showReader && (
+        <div className="w-[40%] h-full flex flex-col glass-panel rounded-2xl overflow-hidden relative">
         {/* Sticky Header */}
         <div className="sticky top-0 z-10 bg-obsidian/80 backdrop-blur-md border-b border-glass-border p-4">
           <h2 className="text-lg font-semibold text-white">Textbook Reader</h2>
@@ -41,9 +42,10 @@ export default function SplitWorkspace({ children }) {
           <div className="h-20"></div> {/* Spacer for scroll bottom */}
         </div>
       </div>
+      )}
 
-      {/* Right Workspace Panel (Dynamic 60%) - AI Orchestration Canvas */}
-      <div className="w-[60%] h-full flex flex-col relative rounded-2xl overflow-hidden">
+      {/* Right Workspace Panel (Dynamic) - AI Orchestration Canvas */}
+      <div className={`${showReader ? 'w-[60%]' : 'w-full'} h-full flex flex-col relative rounded-2xl overflow-hidden`}>
         {children}
       </div>
     </div>

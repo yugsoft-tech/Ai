@@ -6,7 +6,7 @@ export default function AIHomeworkGen() {
   return (
     <div className="h-full flex items-center justify-center p-6">
       <div className="w-full max-w-2xl">
-        <div className="relative p-[2px] rounded-2xl bg-gradient-to-b from-neon-purple via-neon-purple/20 to-transparent box-shadow-glow-purple">
+        <div className="relative p-[2px] rounded-2xl bg-linear-to-b from-neon-purple via-neon-purple/20 to-transparent box-shadow-glow-purple">
           <GlassCard className="rounded-[14px] bg-obsidian border-none flex flex-col p-8">
             {/* Header */}
             <div className="flex justify-between items-start mb-6">

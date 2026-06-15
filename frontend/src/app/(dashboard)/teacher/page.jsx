@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import useCurriculumStore from '@/store/curriculumStore';
 import Sidebar from '@/components/layout/Sidebar';
 import TopHeader from '@/components/layout/TopHeader';
 import SplitWorkspace from '@/components/layout/SplitWorkspace';
@@ -14,18 +16,30 @@ import AnswerKeyGen from '@/components/features/AnswerKeyGen';
 import AIPPTGen from '@/components/features/AIPPTGen';
 import TestPaperGen from '@/components/features/TestPaperGen';
 import AIHomeworkGen from '@/components/features/AIHomeworkGen';
+import GamifiedQuizGen from '@/components/features/GamifiedQuizGen';
 
-export default function Dashboard() {
-  const [activeTool, setActiveTool] = useState('chat');
+function TeacherDashboard() {
+  const searchParams = useSearchParams();
+  const initialTool = searchParams.get('tool') || 'chat';
+  const [activeTool, setActiveTool] = useState(initialTool);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [chatReady, setChatReady] = useState(false);
+  // Show textbook reader only after Chat with Book form is submitted
+  const showReader = activeTool === 'chat' && chatReady;
 
   return (
     <div className="h-full flex overflow-hidden">
-      <Sidebar activeTool={activeTool} setActiveTool={setActiveTool} />
+      <Sidebar 
+        activeTool={activeTool} 
+        setActiveTool={setActiveTool} 
+        isMobileOpen={isSidebarOpen}
+        setIsMobileOpen={setIsSidebarOpen}
+      />
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-        <TopHeader />
-        <SplitWorkspace>
+        <TopHeader toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <SplitWorkspace showReader={showReader}>
           <div className={`h-full w-full ${activeTool === 'chat' ? 'block' : 'hidden'}`}>
-            <ChatWithBook />
+            <ChatWithBook onReady={setChatReady} />
           </div>
           <div className={`h-full w-full ${activeTool === 'lesson' ? 'block' : 'hidden'}`}>
             <AILessonPlan />
@@ -48,8 +62,19 @@ export default function Dashboard() {
           <div className={`h-full w-full ${activeTool === 'homework' ? 'block' : 'hidden'}`}>
             <AIHomeworkGen />
           </div>
+          <div className={`h-full w-full ${activeTool === 'gamified-quiz' ? 'block' : 'hidden'}`}>
+            <GamifiedQuizGen />
+          </div>
         </SplitWorkspace>
       </div>
     </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <Suspense fallback={null}>
+      <TeacherDashboard />
+    </Suspense>
   );
 }

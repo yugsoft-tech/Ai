@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen w-screen bg-[#050505] overflow-hidden font-sans">
+    <div className="flex h-screen w-screen bg-obsidian overflow-hidden font-sans">
       <AdminSidebar />
       <main className="flex-1 h-full overflow-y-auto custom-scrollbar relative">
         {/* Subtle background glow */}

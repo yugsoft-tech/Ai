@@ -14,6 +14,7 @@ import { CurriculumModule } from './modules/curriculum/curriculum.module';
 import { RagEngineModule } from './modules/rag-engine/rag-engine.module';
 import { AiToolsModule } from './modules/ai-tools/ai-tools.module';
 import { CompilerModule } from './modules/compiler/compiler.module';
+import { QuizModule } from './modules/quiz/quiz.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { CompilerModule } from './modules/compiler/compiler.module';
     RagEngineModule,
     AiToolsModule,
     CompilerModule,
+    QuizModule,
   ],
   controllers: [AppController],
   providers: [

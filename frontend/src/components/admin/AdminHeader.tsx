@@ -36,7 +36,7 @@ export default function AdminHeader({ title, description }: AdminHeaderProps) {
       {/* Header Area */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold mb-2 bg-linear-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
             {title}
           </h1>
           <p className="text-sm text-gray-400">

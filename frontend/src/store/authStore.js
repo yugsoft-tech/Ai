@@ -16,7 +16,20 @@ const useAuthStore = create((set) => ({
     set({ user: null, token: null, isAuthenticated: false });
   },
 
-  // You can also add a function to fetch/validate user profile on app load
+  fetchProfile: async () => {
+    try {
+      const api = (await import('@/services/api')).default;
+      const response = await api.get('/users/me');
+      const data = response.data?.data || response.data;
+      set({ user: data });
+      return data;
+    } catch (err) {
+      console.warn('Failed to fetch user profile:', err);
+      Cookies.remove('token');
+      set({ user: null, token: null, isAuthenticated: false });
+    }
+  },
+
   setUser: (user) => set({ user }),
 }));
 

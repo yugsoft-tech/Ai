@@ -62,38 +62,47 @@ export class EmbeddingService {
       const url = `https://generativelanguage.googleapis.com/v1beta/${modelName}:batchEmbedContents`;
 
       try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': this.apiKey,
-          },
-          body: JSON.stringify({
-            requests: texts.map((text) => ({
-              model: modelName,
-              content: {
-                parts: [{ text }],
-              },
-              outputDimensionality: this.dimensions,
-            })),
-          }),
-        });
+        const allEmbeddings: number[][] = [];
+        const BATCH_SIZE = 100; // Gemini API limit is typically 100 per request
 
-        const data = (await response.json()) as any;
+        for (let i = 0; i < texts.length; i += BATCH_SIZE) {
+          const batchTexts = texts.slice(i, i + BATCH_SIZE);
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': this.apiKey,
+            },
+            body: JSON.stringify({
+              requests: batchTexts.map((text) => ({
+                model: modelName,
+                content: {
+                  parts: [{ text }],
+                },
+                outputDimensionality: this.dimensions,
+              })),
+            }),
+          });
 
-        if (!response.ok || data.error) {
-          const errorMsg =
-            data.error?.message || JSON.stringify(data.error || data);
-          throw new Error(errorMsg);
+          const data = (await response.json()) as any;
+
+          if (!response.ok || data.error) {
+            const errorMsg =
+              data.error?.message || JSON.stringify(data.error || data);
+            throw new Error(errorMsg);
+          }
+
+          if (!data.embeddings || !Array.isArray(data.embeddings)) {
+            throw new Error(
+              'Invalid response structure from Gemini API: missing embeddings array',
+            );
+          }
+
+          const batchEmbeddings = data.embeddings.map((item: any) => item.values);
+          allEmbeddings.push(...batchEmbeddings);
         }
 
-        if (!data.embeddings || !Array.isArray(data.embeddings)) {
-          throw new Error(
-            'Invalid response structure from Gemini API: missing embeddings array',
-          );
-        }
-
-        return data.embeddings.map((item: any) => item.values);
+        return allEmbeddings;
       } catch (err: any) {
         throw new ServiceUnavailableException(
           `Gemini Embedding Error: ${err.message || err}. Please configure a valid Gemini API key in the backend .env file.`,

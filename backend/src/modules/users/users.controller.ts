@@ -24,10 +24,27 @@ export class UsersController {
     return this.usersService.findById(user.id);
   }
 
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
   @Get()
   findAll(@CurrentUser() user: AuthenticatedUser) {
     return this.usersService.findAllByTenant(user.tenantId);
+  }
+
+  @Roles(UserRole.SUPER_ADMIN, UserRole.SCHOOL_ADMIN)
+  @Post('create-teacher')
+  createTeacher(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: CreateUserDto,
+  ) {
+    return this.usersService.createTeacher(user.tenantId, dto);
+  }
+
+  @Roles(UserRole.SUPER_ADMIN)
+  @Post('create-school')
+  createSchool(
+    @Body() dto: CreateUserDto & { tenantName: string },
+  ) {
+    return this.usersService.createSchool(dto);
   }
 
   @Roles(UserRole.ADMIN)

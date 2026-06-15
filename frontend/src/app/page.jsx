@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col font-sans selection:bg-neon-purple selection:text-white">
+    <div className="min-h-screen bg-obsidian text-white flex flex-col font-sans selection:bg-neon-purple selection:text-white">
       {/* Background glowing effects */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-neon-purple/20 rounded-full blur-[100px]" />
@@ -15,24 +15,24 @@ export default function LandingPage() {
       </div>
 
       {/* Header */}
-      <header className="relative z-10 w-full px-8 py-6 flex justify-between items-center glass-panel border-b border-glass-border">
+      <header className="relative z-10 w-full px-4 md:px-8 py-4 md:py-6 flex justify-between items-center glass-panel border-b border-glass-border">
         <div className="flex items-center gap-2">
           <Brain className="w-8 h-8 text-neon-purple" />
-          <span className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-neon-purple to-emerald-green">
+          <span className="text-xl md:text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-r from-neon-purple to-emerald-green">
             YugSoft AI
           </span>
         </div>
-        <nav className="flex items-center gap-6">
-          <Link href="/features" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Features</Link>
-          <Link href="/pricing" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Pricing</Link>
-          <div className="flex items-center gap-3">
+        <nav className="flex items-center gap-4 md:gap-6">
+          <Link href="/features" className="hidden md:block text-sm font-medium text-gray-300 hover:text-white transition-colors">Features</Link>
+          <Link href="/pricing" className="hidden md:block text-sm font-medium text-gray-300 hover:text-white transition-colors">Pricing</Link>
+          <div className="flex items-center gap-2 md:gap-3">
             <Link href="/login">
-              <button className="px-4 py-2 text-sm font-medium text-white hover:text-neon-purple transition-colors">
+              <button className="px-3 md:px-4 py-2 text-sm font-medium text-white hover:text-neon-purple transition-colors">
                 Log In
               </button>
             </Link>
             <Link href="/signup">
-              <button className="px-4 py-2 text-sm font-medium bg-white text-black rounded-full hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+              <button className="px-3 md:px-4 py-2 text-sm font-medium bg-white text-black rounded-full hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.3)]">
                 Sign Up
               </button>
             </Link>
@@ -53,18 +53,18 @@ export default function LandingPage() {
             <span>Next-Generation AI for Educators</span>
           </div>
           
-          <h1 className="text-6xl md:text-8xl font-extrabold tracking-tight mb-8">
+          <h1 className="text-4xl md:text-6xl lg:text-8xl font-extrabold tracking-tight mb-6 md:mb-8 mt-10 md:mt-0">
             Empower Your <br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-neon-purple to-emerald-green">
+            <span className="bg-clip-text text-transparent bg-linear-to-r from-neon-purple to-emerald-green">
               Teaching Experience
             </span>
           </h1>
           
-          <p className="text-xl md:text-2xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl lg:text-2xl text-gray-400 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed">
             Generate lesson plans, craft perfect worksheets, and automate homework grading with the most powerful AI suite designed exclusively for schools.
           </p>
           
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/login">
               <motion.button 
                 whileHover={{ scale: 1.05 }}
@@ -72,15 +72,6 @@ export default function LandingPage() {
                 className="px-8 py-4 bg-neon-purple text-white rounded-full font-semibold flex items-center gap-2 shadow-[0_0_20px_rgba(139,92,246,0.4)] hover:shadow-[0_0_30px_rgba(139,92,246,0.6)] transition-shadow"
               >
                 Get Started <ChevronRight className="w-5 h-5" />
-              </motion.button>
-            </Link>
-            <Link href="/teacher">
-              <motion.button 
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-transparent border border-gray-600 text-white rounded-full font-semibold hover:bg-white/5 transition-colors"
-              >
-                View Dashboard
               </motion.button>
             </Link>
           </div>
@@ -91,7 +82,7 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-          className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full"
+          className="mt-16 md:mt-24 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full pb-10"
         >
           <div className="glass-panel p-8 rounded-3xl flex flex-col items-center text-center hover:-translate-y-2 transition-transform duration-300">
             <div className="w-14 h-14 rounded-2xl bg-neon-purple/20 flex items-center justify-center mb-6">

@@ -16,6 +16,7 @@ import { CurriculumService } from './curriculum.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { CreateChapterDto } from './dto/create-chapter.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
+import { UpdateChapterDto } from './dto/update-chapter.dto';
 
 @Controller('curriculum')
 export class CurriculumController {

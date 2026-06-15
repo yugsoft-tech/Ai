@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsUUID, Max, Min, IsArray } from 'class-validator';
 
 export class SemanticSearchDto {
   @IsString()
@@ -7,6 +7,11 @@ export class SemanticSearchDto {
   @IsOptional()
   @IsUUID()
   chapterId?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  chapterIds?: string[];
 
   @IsOptional()
   @IsUUID()

@@ -45,10 +45,10 @@ export default function CurriculumManagementPage() {
         </button>
       </div>
 
-      <div className="glass-panel rounded-xl overflow-hidden border border-[rgba(255,255,255,0.1)]">
+      <div className="glass-panel rounded-xl overflow-hidden border border-glass-border">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-400">
-            <thead className="bg-[rgba(255,255,255,0.02)] border-b border-[rgba(255,255,255,0.05)] text-xs uppercase tracking-wider text-gray-500">
+            <thead className="bg-[rgba(255,255,255,0.02)] border-b border-glass-bg text-xs uppercase tracking-wider text-gray-500">
               <tr>
                 <th className="px-6 py-4 font-semibold">Textbook Title</th>
                 <th className="px-6 py-4 font-semibold">Class/Grade</th>
@@ -58,7 +58,7 @@ export default function CurriculumManagementPage() {
                 <th className="px-6 py-4 text-right font-semibold">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(255,255,255,0.05)]">
+            <tbody className="divide-y divide-glass-bg">
               {isLoading ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
@@ -93,13 +93,13 @@ export default function CurriculumManagementPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-xs">{new Date(book.createdAt).toLocaleDateString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-[rgba(255,255,255,0.05)]">
+                        <button className="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-glass-bg">
                           <Edit2 size={16} />
                         </button>
                         <button className="p-2 text-gray-500 hover:text-red-400 transition-colors rounded-lg hover:bg-[rgba(239,68,68,0.1)]">
                           <Trash2 size={16} />
                         </button>
-                        <button className="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-[rgba(255,255,255,0.05)]">
+                        <button className="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-glass-bg">
                           <MoreVertical size={16} />
                         </button>
                       </div>

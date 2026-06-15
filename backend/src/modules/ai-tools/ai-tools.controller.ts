@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post } from '@nestjs/common';
+import { Body, Controller, Param, Post, ForbiddenException } from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../common/enums/role.enum';
@@ -11,13 +11,17 @@ import { GenerateContentDto } from './dto/generate-content.dto';
 export class AiToolsController {
   constructor(private readonly orchestrator: AiOrchestratorService) {}
 
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT)
   @Post(':tool/generate')
   generate(
     @CurrentUser() user: AuthenticatedUser,
     @Param('tool') tool: string,
     @Body() dto: GenerateContentDto,
   ) {
+    if (user.role === UserRole.STUDENT && tool !== 'gamified-quiz') {
+      throw new ForbiddenException('Students can only access the Gamified Quiz Generator');
+    }
+
     return this.orchestrator.generate(
       user.tenantId,
       tool as AiToolType,

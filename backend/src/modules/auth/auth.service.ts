@@ -48,7 +48,7 @@ export class AuthService {
       tenantId,
       email: dto.email,
       passwordHash,
-      role: dto.role ?? UserRole.ADMIN,
+      role: dto.role || UserRole.STUDENT,
     });
 
     return this.buildAuthResponse(user);
@@ -56,7 +56,7 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const user = await this.usersService.findByEmailWithPassword(dto.email);
-    if (!user) {
+    if (!user || !user.passwordHash) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -65,6 +65,35 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    return this.buildAuthResponse(user);
+  }
+
+  async validateOAuthUser(email: string, name: string) {
+    const existing = await this.usersService.findByEmailGlobal(email);
+    if (existing) {
+      return existing;
+    }
+
+    // Create a new user with a generated tenant if they don't exist
+    const tenant = this.tenantRepository.create({
+      name: `${name}'s School`,
+      status: TenantStatus.ACTIVE,
+    });
+    const savedTenant = await this.tenantRepository.save(tenant);
+
+    // Generate random password for OAuth users since they won't use it
+    const randomPassword = Math.random().toString(36).slice(-8);
+    const passwordHash = await bcrypt.hash(randomPassword, this.saltRounds);
+    
+    return this.usersService.create({
+      tenantId: savedTenant.id,
+      email,
+      passwordHash,
+      role: UserRole.STUDENT,
+    });
+  }
+
+  getAuthResponse(user: User) {
     return this.buildAuthResponse(user);
   }
 

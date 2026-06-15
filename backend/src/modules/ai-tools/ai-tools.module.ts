@@ -7,6 +7,9 @@ import { LessonPlanService } from './services/lesson-plan.service';
 import { OpenaiChatService } from './services/openai-chat.service';
 import { PptService } from './services/ppt.service';
 import { WorksheetService } from './services/worksheet.service';
+import { CustomWorksheetService } from './services/custom-worksheet.service';
+import { TestPaperService } from './services/test-paper.service';
+import { GamifiedQuizService } from './services/gamified-quiz.service';
 
 @Module({
   imports: [RagEngineModule],
@@ -15,9 +18,12 @@ import { WorksheetService } from './services/worksheet.service';
     AiOrchestratorService,
     OpenaiChatService,
     WorksheetService,
+    CustomWorksheetService,
     LessonPlanService,
     PptService,
     HomeworkService,
+    TestPaperService,
+    GamifiedQuizService,
   ],
   exports: [AiOrchestratorService],
 })

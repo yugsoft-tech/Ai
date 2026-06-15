@@ -46,3 +46,6 @@ testem.log
 .env.test
 .env.production
 .env.local
+
+*.test.js
+list-models.js
